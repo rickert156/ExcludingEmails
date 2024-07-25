@@ -1,11 +1,11 @@
 import os, csv
 
 result_dir = 'Result'
+result_file = 'exceptions.txt'
 list_exeption_domain = 'exception_domain.txt'
 list_exeption_email = 'exception_email.txt'
 exception_dir = 'Exceptions'
 base_dir = 'Base'
-all_exceptions = [list_exeption_domain, list_exeption_email]
 
 if not os.path.exists(result_dir):
 	os.makedirs(result_dir)
@@ -32,37 +32,41 @@ def searchFile():
 	except Exception as ex:
 		print(f'\nCode Error: {ex}\nПопробуй еще раз...\n')
 		searchFile()
+
+def writeException(email):
+	with open(f'{result_dir}/{result_file}', 'a+') as result:
+		write = result.write(f'{email}\n')
 		
+
+def searchDomain(email):
+	with open(f'{exception_dir}/{list_exeption_domain}', 'r') as domain_file:
+		for domain in domain_file.readlines():
+			domain = domain.strip()
+			if domain in email:
+				print(f'Domain {email}')
+				writeException(email)
+
+def searchEmail(email):
+	with open(f'{exception_dir}/{list_exeption_email}', 'r') as email_file:
+		for mail in email_file.readlines():
+			# mail = mail.strip()
+			if mail == email:
+				print(f'Email {email}')
+				writeException(email)
 
 def cleaning():
 	open_file_base = searchFile()
 
-	with open(f'{base_dir}/{open_file_base}', 'r') as file_base:
-		print('')
-		row_number = 0
-		for row_emails in csv.DictReader(file_base):
-			row_number+=1
-			emails = row_emails['Email']
-			
-			#Запись исключений по домену
-			with open(f'{exception_dir}/{list_exeption_domain}', 'r') as exception_file:
-				number_string = 0
-				for string_exceptions in exception_file.readlines():
-					string_exceptions = string_exceptions.strip()
-					number_string+=1
-					if string_exceptions in emails:
-						
-						print(f'[Domain] [{number_string}] {emails}')
+	with open(f'{base_dir}/{open_file_base}', 'r') as file:
+		number_string = 0
+		for row in csv.DictReader(file):
+			number_string+=1
+			email = row['Email']
+			# print(f'{number_string} {email}')
+			searchDomain(email)
+			searchEmail(email)
 
-			#Запись исключения по адресу
-			with open(f'{exception_dir}/{list_exeption_email}', 'r') as exception_file:
-				number_string = 0
-				for string_exceptions in exception_file.readlines():
-					string_exceptions = string_exceptions.strip()
-					number_string+=1
-					if string_exceptions in emails:
-						
-						print(f'[Emails] [{number_string}] {emails}')
+
 
 if __name__ == '__main__':
 	try:
